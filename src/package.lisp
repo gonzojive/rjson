@@ -5,7 +5,9 @@
 	   #:encode-rjson-to-string
 	   #:represent
 	   #:represent-rjson
+	   #:represent-rjson-slot
 	   #:rjson-type
+	   #:create
 	   
 	   ;; parenscript side
 	   #:decode-rjson
