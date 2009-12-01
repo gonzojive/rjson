@@ -6,8 +6,11 @@
 	   #:represent
 	   #:represent-rjson
 	   #:represent-rjson-slot
+	   #:represented-slots
 	   #:rjson-type
+	   #:rjson-type-of-class
 	   #:create
+	   #:xref-p
 	   
 	   ;; parenscript side
 	   #:decode-rjson

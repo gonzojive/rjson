@@ -15,7 +15,7 @@ Part of the Suave project."
                         :components
 			((:file "package")
 			 (:file "rjson-encode" :depends-on ("package"))
-
+			 (:file "rjson-clos" :depends-on ("rjson-encode"))
 			 (:module "paren"
 				  :components ((:parenscript-file "rjson-decode"))))))
   :depends-on ("parenscript" "cl-json" "closer-mop" "paren-util"))

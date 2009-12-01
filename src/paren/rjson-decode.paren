@@ -11,35 +11,53 @@
 (defvar *type-table* (create))
 
 (defun rjtype (type &key construct-fn alloc-fn init-fn)
-  "Defines an RJSON type for use in decoding."
+  "Defines an RJSON type for use in decoding.
+CONSTRUCT-FN is a function that takes one argument: an object with keys and values,
+and returns the fully-constructed object.
+
+ALLOC-FN is a function that takes no arguments and returns an allocated object of 
+the given type.
+
+INIT-FN is a function that takes two arguments: the allocated object, and an object with
+keys and values, and returns a fully-constructed object."
   (setf (slot-value *type-table* type)
 	(create 'construct construct-fn
 		'alloc alloc-fn
 		'init init-fn)))
 
 (defun decode-rjson (rjson-text)
-  (let ((xref-table (create)))
+  (let ((xref-table (create))
+	(tag-to-type (create)))
     (let* ((global::rjalloc
 	    (lambda (tag type)
-	      (return (setf (slot-value xref-table tag)
-			    (funcall (slot-value *type-table* type 'alloc))))))
+	      (setf (slot-value tag-to-type tag) type)
+	      (let ((table-entry (slot-value *type-table* type)))
+		(if table-entry
+		    (return (setf (slot-value xref-table tag)
+				  (funcall (slot-value table-entry 'alloc))))
+		    (js-global::throw (+ "No entry in type table for type " type))))))
 	   (global::rjconstruct
 	    (lambda (type arg-obj)
-	      (return (if (slot-value *type-table* type 'construct)
-			  (funcall (slot-value *type-table* type 'construct) arg-obj)
-			  (funcall (slot-value *type-table* type 'init)
-				   (funcall (slot-value *type-table* type 'alloc))
-				   arg-obj)))))
-				   
+	      (let ((table-entry (slot-value *type-table* type)))
+		(if table-entry
+		    (return (if (slot-value table-entry 'construct)
+				(funcall (slot-value table-entry 'construct) arg-obj)
+				(funcall (slot-value table-entry 'init)
+				   (funcall (slot-value table-entry 'alloc))
+				   arg-obj)))
+		    (js-global::throw (+ "No entry in type table for type " type))))))
+
 	   (global::rjinit
 	    (lambda (tag init-obj)
 	      (let ((alloced-object (slot-value xref-table tag)))
 		(return (setf (slot-value xref-table tag)
-			      (funcall (slot-value *type-table* type 'init)
-				       alloced-object
-				       init-obj))))))
+			      (or (funcall (slot-value *type-table* (slot-value tag-to-type tag) 'init)
+					   alloced-object
+					   init-obj)
+				  alloced-object))))))
 	   (global::rjdecl
 	    (lambda (tag value) (return (setf (slot-value xref-table tag) value))))
 	   (global::rjref (lambda (tag) (return (slot-value xref-table tag)))))
       (let ((evaled-object (js-global::eval (+ "(" rjson-text ")") )))
 	(return (slot-value evaled-object :content))))))
+
