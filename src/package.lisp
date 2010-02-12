@@ -1,6 +1,6 @@
 (defpackage :org.iodb.rjson
   (:nicknames :rjson)
-  (:use :common-lisp :closer-mop :parenscript)
+  (:use :common-lisp :parenscript)
   (:export #:encode-rjson
 	   #:encode-rjson-to-string
 	   #:represent

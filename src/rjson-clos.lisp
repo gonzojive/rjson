@@ -34,11 +34,11 @@ not the object itself."))
 
 (defmethod represent-rjson-slot ((object standard-object) slot)
   (let ((value
-	 (if (slot-boundp-using-class (class-of object) object slot)
-	     (slot-value-using-class (class-of object) object slot)
+	 (if (c2mop:slot-boundp-using-class (class-of object) object slot)
+	     (c2mop:slot-value-using-class (class-of object) object slot)
 	     'undefined))
-	(key (or (first (slot-definition-initargs slot))
-		 (slot-definition-name slot))))
+	(key (or (first (c2mop:slot-definition-initargs slot))
+		 (c2mop:slot-definition-name slot))))
     (if (or ;(null value)
 	    (eql 'undefined value))
 	nil
@@ -47,7 +47,7 @@ not the object itself."))
 
 (defmethod represented-slots ((object standard-object))
   "Default is all the slots of the object."
-  (class-slots (class-of object)))
+  (c2mop:class-slots (class-of object)))
 
 (defmethod rjson-type ((object standard-object))
   (rjson-type-of-class (class-of object)))
