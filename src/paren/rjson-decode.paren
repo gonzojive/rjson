@@ -25,6 +25,13 @@ keys and values, and returns a fully-constructed object."
 		'alloc alloc-fn
 		'init init-fn)))
 
+(rjtype "rjson:date"
+        :construct-fn (lambda (obj) (return (new (jsns::-Date (@ obj "rfc1123"))))))
+
+;(rjtype "json:array" 
+;        :alloc-fn (lambda () (new (jsns::-array)))
+;        :init-fn (lambda (obj)  )
+
 (defun decode-rjson (rjson-text)
   (let ((xref-table (create))
 	(tag-to-type (create)))
