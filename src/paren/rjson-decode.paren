@@ -35,7 +35,7 @@ keys and values, and returns a fully-constructed object."
 (defun decode-rjson (rjson-text)
   (let ((xref-table (create))
 	(tag-to-type (create)))
-    (let* ((global::rjalloc
+    (let* ((jsns::rjalloc
 	    (lambda (tag type)
 	      (setf (slot-value tag-to-type tag) type)
 	      (let ((table-entry (slot-value *type-table* type)))
@@ -43,7 +43,7 @@ keys and values, and returns a fully-constructed object."
 		    (return (setf (slot-value xref-table tag)
 				  (funcall (slot-value table-entry 'alloc))))
 		    (js-global::throw (+ "No entry in type table for type " type))))))
-	   (global::rjconstruct
+	   (jsns::rjconstruct
 	    (lambda (type arg-obj)
 	      (let ((table-entry (slot-value *type-table* type)))
 		(if table-entry
@@ -54,7 +54,7 @@ keys and values, and returns a fully-constructed object."
 				   arg-obj)))
 		    (js-global::throw (+ "No entry in type table for type " type))))))
 
-	   (global::rjinit
+	   (jsns::rjinit
 	    (lambda (tag init-obj)
 	      (let ((alloced-object (slot-value xref-table tag)))
 		(return (setf (slot-value xref-table tag)
@@ -62,9 +62,9 @@ keys and values, and returns a fully-constructed object."
 					   alloced-object
 					   init-obj)
 				  alloced-object))))))
-	   (global::rjdecl
+	   (jsns::rjdecl
 	    (lambda (tag value) (return (setf (slot-value xref-table tag) value))))
-	   (global::rjref (lambda (tag) (return (slot-value xref-table tag)))))
+	   (jsns::rjref (lambda (tag) (return (slot-value xref-table tag)))))
       (let ((evaled-object (js-global::eval (+ "(" rjson-text ")") )))
 	(return (slot-value evaled-object :content))))))
 
