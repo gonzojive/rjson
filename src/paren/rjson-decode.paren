@@ -32,25 +32,30 @@ keys and values, and returns a fully-constructed object."
 ;        :alloc-fn (lambda () (new (jsns::-array)))
 ;        :init-fn (lambda (obj)  )
 
-(defun decode-rjson (rjson-text)
-  (let ((xref-table (create))
-	(tag-to-type (create)))
+(defun decode-rjson (rjson-text &key (xref-table (create)) )
+  "Decodes a string of encoded RJSON and returns the content.  
+
+To accomplish the decoing, the functions rjconstruct, rjalloc, rjinit,
+and rjdecl are bound and then the text is evaled verbatim.  Since eval
+is used, care should be taken to execute only trusted RJSON with this
+code."
+   (let ((tag-to-type (create)))
     (let* ((jsns::rjalloc
-	    (lambda (tag type)
+	    (lambda (tag type &rest rest)
 	      (setf (slot-value tag-to-type tag) type)
 	      (let ((table-entry (slot-value *type-table* type)))
 		(if table-entry
 		    (return (setf (slot-value xref-table tag)
-				  (funcall (slot-value table-entry 'alloc))))
+				  (apply (slot-value table-entry 'alloc) rest)))
 		    (js-global::throw (+ "No entry in type table for type " type))))))
 	   (jsns::rjconstruct
-	    (lambda (type arg-obj)
+	    (lambda (type alloc-arg arg-obj)
 	      (let ((table-entry (slot-value *type-table* type)))
 		(if table-entry
 		    (return (if (slot-value table-entry 'construct)
 				(funcall (slot-value table-entry 'construct) arg-obj)
 				(funcall (slot-value table-entry 'init)
-				   (funcall (slot-value table-entry 'alloc))
+				   (funcall (slot-value table-entry 'alloc) alloc-arg)
 				   arg-obj)))
 		    (js-global::throw (+ "No entry in type table for type " type))))))
 

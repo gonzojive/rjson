@@ -9,6 +9,7 @@
 	   #:represented-slots
 	   #:rjson-type
 	   #:rjson-type-of-class
+           #:rjson-allocation-arguments
 	   #:create
 	   #:xref-p
 	   

@@ -70,6 +70,11 @@ form allows Javascript literals using the ARRAY and CREATE operators, lisp numbe
 and lisp string objects.  To represent an object referenced by the representation of this
 object, call REPRESENT with the object as the argument."))
 
+(defgeneric rjson-allocation-arguments (object)
+  (:documentation "Returns a list of arguments passed to the rjalloc
+  function along with the cross-ref tag and the type.  This can be
+  used to potentially pass along identifiers and other primitives."))
+
 
 (defclass encoding-session ()
   ((history        :accessor session-history
@@ -156,6 +161,10 @@ represent-rjson methods."
 	     object)
     (apply #'list 'create (nreverse create-args))))
 
+(defmethod rjson-allocation-arguments (object)
+  "By default do not pass any extra arguments."
+  nil)
+
 ;(defmethod rjson-type ((object string))
 ;  "json:string")
 
@@ -173,7 +182,9 @@ represent-rjson methods."
 	 ;; parenscript forms for allocating multiply-referenced objects 
 	 (alloc-forms (mapcar #'(lambda (entry)
 				  (declare (type history-entry entry))
-				  `(,*allocation-identifier* ,(entry-reftag entry) ,(rjson-type (entry-object entry))))
+				  `(,*allocation-identifier* ,(entry-reftag entry)
+                                                             ,(rjson-type (entry-object entry))
+                                                             (create ,@(rjson-allocation-arguments (entry-object entry)))))
 			      multiref-entries))
 	 ;; parenscript forms for initializing multiply-referenced objects
 	 (init-forms (mapcar #'(lambda (entry)
@@ -259,7 +270,9 @@ and the stream to write to."
       (fast-encode
        (cond
 	 ((and (= 1 refcount) type (not (= 5 (mismatch "json:" type))))
-	  `(,*construction-identifier* ,type ,paren-form))
+	  `(,*construction-identifier* ,type
+                                       (create ,@(rjson-allocation-arguments (entry-object entry)))
+                                       ,paren-form))
 	 ((and (= 1 refcount))
 	  paren-form)
 	 (t
