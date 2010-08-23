@@ -47,7 +47,7 @@ code."
 		(if table-entry
 		    (return (setf (slot-value xref-table tag)
 				  (apply (slot-value table-entry 'alloc) rest)))
-		    (js-global::throw (+ "No entry in type table for type " type))))))
+		    (ps:throw (+ "No entry in type table for type " type))))))
 	   (jsns::rjconstruct
 	    (lambda (type alloc-arg arg-obj)
 	      (let ((table-entry (slot-value *type-table* type)))
@@ -57,7 +57,7 @@ code."
 				(funcall (slot-value table-entry 'init)
 				   (funcall (slot-value table-entry 'alloc) alloc-arg)
 				   arg-obj)))
-		    (js-global::throw (+ "No entry in type table for type " type))))))
+		    (ps:throw (+ "No entry in type table for type " type))))))
 
 	   (jsns::rjinit
 	    (lambda (tag init-obj)

@@ -1,5 +1,8 @@
 (in-package :org.iodb.rjson)
 
+;(declaim (optimize (debug 3)))
+
+
 (defparameter *encoding-session* nil)
 
 (defparameter *allocation-identifier* 'rjalloc
