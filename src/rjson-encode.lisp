@@ -62,9 +62,7 @@ the initialization data object.
   (:method ((obj symbol)) (declare (ignore obj)) (error "Cannot encode symbol!."))
   (:method ((obj number)) (declare (ignore obj)) nil)
   (:method ((obj hash-table)) (declare (ignore obj)) t)
-  (:method ((object (eql t))) (declare (ignore object)) nil)
-  (:method ((object (eql 'ps:true))) (declare (ignore object)) nil)
-  (:method ((object (eql 'ps:false))) (declare (ignore object)) nil))
+  (:method ((object (eql t))) (declare (ignore object)) nil))
 
 (defgeneric represent-rjson (object)
   (:documentation
@@ -144,14 +142,6 @@ represent-rjson methods."
 (defmethod represent-rjson ((true (eql t)))
   (declare (ignore true))
   t)
-
-(defmethod represent-rjson ((true (eql 'ps:true)))
-  (declare (ignore true))
-  t)
-
-(defmethod represent-rjson ((false (eql 'ps:false)))
-  (declare (ignore false))
-  'ps:false)
 
 (defmethod represent-rjson((seq sequence))
   `(array ,@(map 'list #'(lambda (obj) (represent obj)) seq)))
